@@ -1,0 +1,1 @@
+For additional info, please refer to [openeye-CamSI build](https://github.com/chili-chips-ba/openeye-CamSI/tree/main/3.build) 
