@@ -33,6 +33,6 @@ HEADERS += \
     mainwindow.h \
     udpcommunicator.h
 
-LIBS += -LD:\GitHub\openeye-CSI\5.sw\qt\opencv-build\install\x64\vc14\lib -lopencv_core4100 -lopencv_imgproc4100 -lopencv_highgui4100 -lopencv_imgcodecs4100 -lopencv_videoio4100 -lopencv_video4100 -lopencv_calib3d4100 -lopencv_photo4100 -lopencv_features2d4100
-INCLUDEPATH += D:\GitHub\openeye-CSI\5.sw\qt\opencv-build\install\include
-DEPENDPATH += D:\GitHub\openeye-CSI\5.sw\qt\opencv-build\install\include
+LIBS += -LD:\GitHub\openeye-CSI\csi-ethernet\5.sw\qt\opencv-build\install\x64\vc14\lib -lopencv_core4100 -lopencv_imgproc4100 -lopencv_highgui4100 -lopencv_imgcodecs4100 -lopencv_videoio4100 -lopencv_video4100 -lopencv_calib3d4100 -lopencv_photo4100 -lopencv_features2d4100
+INCLUDEPATH += D:\GitHub\openeye-CSI\csi-ethernet\5.sw\qt\opencv-build\install\include
+DEPENDPATH += D:\GitHub\openeye-CSI\csi-ethernet\5.sw\qt\opencv-build\install\include

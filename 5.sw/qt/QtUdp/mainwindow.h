@@ -1,11 +1,11 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-
 #include <QMainWindow>
 #include <QUdpSocket>
 #include <QThread>
 #include <QLabel>
+#include "ui_mainwindow.h"
 #include "udpcommunicator.h"
 
 
@@ -16,8 +16,11 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+private slots:
+    void on_pushButton_clicked();
+
 private:
-    QImage *image1 = nullptr;
+    Ui::MainWindow *ui;
     UDPCommunicator *mUdpCommunicator;
     QSharedPointer<QThread> mUdpCommunicatorThread;
 

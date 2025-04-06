@@ -12,19 +12,13 @@ UDPCommunicator::~UDPCommunicator()
 
 void UDPCommunicator::initialize()
 {
+
     bool ipChange = hostAddress.setAddress("192.168.1.20");
     if(ipChange) qInfo() << "IP ADDRESS CHANGED";
     else qInfo() << "IP ADDRESS NOT CHANGED";
 
-    int xdim =1280;
-    int ydim =720;
-    image = cv::Mat (ydim, xdim, CV_8UC3);
-    frame = 0;
-    frame_prev = 0;
-
     socket = new QUdpSocket(this);
-    bool result =  socket->bind(hostAddress, 1234);
-    qInfo() << result;
+    bool result = socket->bind(hostAddress, 1234);
     if(result)
     {
         qInfo() << "PASS BINDING";
@@ -33,7 +27,14 @@ void UDPCommunicator::initialize()
     {
         qInfo() << "FAIL BINDING";
     }
-    connect(socket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()), Qt::AutoConnection);
+
+    connect(socket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
+
+    int xdim =1280;
+    int ydim =720;
+    image = cv::Mat (ydim, xdim, CV_8UC3);
+    frame = 0;
+    frame_prev = 0;
 
     mDisplayTimer = QSharedPointer<QTimer>(new QTimer());
     mDisplayTimer->setInterval(1);
@@ -41,6 +42,7 @@ void UDPCommunicator::initialize()
     mDisplayTimer->setSingleShot(false);
     connect(mDisplayTimer.data(), &QTimer::timeout, this, &UDPCommunicator::display);
     mDisplayTimer->start();
+
     currentTime = QDateTime::currentMSecsSinceEpoch();
     /*if(socket->waitForReadyRead()) {
         QThread::wait(100);
@@ -49,6 +51,7 @@ void UDPCommunicator::initialize()
 
 void UDPCommunicator::display()
 {
+
     // show the image on window
     qint32 diffTime = QDateTime::currentMSecsSinceEpoch() - currentTime;
     if(diffTime > 2) {
@@ -92,14 +95,10 @@ void UDPCommunicator::processPendingDatagrams()
                     image.at<cv::Vec3b>(y,x-1)[0] = (uchar)((uint16_t)(rgb565&0x001F) << 3);
                 }
             }
-            /*if(y > 718) {
-                cv::imshow("Image", image);
-            }*/
             frame_prev = frame;
             //qInfo() <<"frame=" <<frame << "; y=" <<y;
         } else {
             //qInfo() <<"size " << datagram.size();
         }
-        //cv::imshow("Image", image);
     }
 }

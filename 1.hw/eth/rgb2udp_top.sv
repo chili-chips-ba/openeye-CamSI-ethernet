@@ -37,10 +37,22 @@
 //              https://opensource.org/license/bsd-3-clause
 //------------------------------------------------------------------------
 // Description: RGB-to-UDP Top level
+// 
+// Features: This module implements the converting pixel data from rgb888 to rgb565 format
+// 
+// We created a UDP packet with 2 bytes of frame and line counters and 1280 bytes of pixels. This means that our UDP packet length is 1282 bytes.
+// In the first two bytes, 15-th bit represent the frame counter and on the PC side we can detect even and odd frames, the next 15 bits [14:0] represent 
+// the line counter in the frame, in our case it is lines from 0 to 719.
+// The next 1280 bytes represent the line pixels that we get from the RGB module. However, since the RGB module sends us pixels in the form of 
+// RGB888 (3 bytes per pixel) and sends us 1280 pixels in one line, our packet should be 3840 bytes in length.
+// Since we do not have a buffer to store these incoming pixels, we have to reduce this packet, the first part is to convert 
+// the RGB888 format to RGB565 format, in this way instead of 3840 bytes we need to send 2560. 
+// In the second round we can send every other pixel, let's say that in even lines we send even pixels: 0, 2, 4, ... 1178 in RGB565 format, and in odd lines 
+// we send odd pixels: 1, 3, 5, .... 1179 on this way we have reduced the amount of pixels that we need to send via Ethernet to 1280 bytes per one CMOS line.
+//
 //========================================================================
-
 module rgb2udp_top
-   import top_pkg::*;
+  import top_pkg::*;
    import hdmi_pkg::*;   
 (
    input  logic      clk,
@@ -49,7 +61,7 @@ module rgb2udp_top
    
    input  logic      in_frame,
    input  logic      in_line, 
-   input  logic      rgb_valid,
+
    input  pix_t      data_in,
    input  logic      data_in_en,      
    
@@ -65,33 +77,53 @@ module rgb2udp_top
 
    parameter [3:0]   T_STATES_IDLE = 0,
                      T_STATES_INIT = 1,
-                     T_STATES_SYNC_FRM1 = 2,
-                     T_STATES_SYNC_FRM2 = 3,
-                     T_STATES_SYNC_ROW1 = 4,
-                     T_STATES_SYNC_ROW2 = 5,
-                     T_STATES_ROW_HI = 6,
-                     T_STATES_ROW_LO = 7,                     
-                     T_STATES_IMAGE_DATA = 9,
-                     T_STATES_END = 15;
+                     T_STATES_WAIT_ROW = 2,
+                     T_STATES_ROW_HI = 3,
+                     T_STATES_ROW_LO = 4,
+                     T_STATES_IMAGE_DATA = 5,
+                     T_STATES_END_ROW = 6;
 
    parameter [15:0]  C_COL_START = 0;
-   parameter [15:0]  C_COL_STOP = 640;
+   parameter [15:0]  C_COL_STOP = 1280;
    parameter [15:0]  C_ROW_START = 0;
-   parameter [15:0]  C_ROW_STOP = 480;   
-   parameter [15:0]  C_PACKET_LENGTH = C_COL_STOP; // 2 byte I_ROW_CNT + 2 byte I_COL_CNT
+   parameter [15:0]  C_ROW_STOP = 720;   
+   parameter [15:0]  C_PACKET_LENGTH = 1282;
    
-   bus8_t         I_FRAME_CNT;
+   bus2_t         I_FRAME_CNT;
    bus16_t        I_ROW_CNT;
-   bus16_t        I_COL_CNT;
+   bus16_t        I_COL_CNT, I_COL_CNT_dl1, I_COL_CNT_dl2;
        
    bus4_t         I_CURRENT_STATE;
    bus4_t         I_NEXT_STATE;
    bus8_t         I_TX_FIFO_WRDAT_WORD;
    logic          I_TX_FIFO_WREN_WORD;   
-   logic          in_line_dl1, in_line_dl2, in_line_dl3, in_line_dl4;
    logic          in_frame_dl1;
-   logic          data_in_en_dl1;
+   logic          in_line_dl1, in_line_dl2, in_line_dl3, in_line_dl4;
+   pix_t          data_in_dl1, data_in_dl2, data_in_dl3, data_in_dl4;
    
+   always_ff @(posedge clk)
+   begin 
+      if (rst) begin
+         in_line_dl1 <= 1'b0;
+         in_line_dl2 <= 1'b0;
+         in_line_dl3 <= 1'b0;
+         in_line_dl4 <= 1'b0;
+         data_in_dl1 <= '0;
+         data_in_dl2 <= '0;
+         data_in_dl3 <= '0;
+         data_in_dl4 <= '0;
+      end else begin
+         in_line_dl1 <= in_line;
+         in_line_dl2 <= in_line_dl1;
+         in_line_dl3 <= in_line_dl2;
+         in_line_dl4 <= in_line_dl3;   
+         data_in_dl1 <= data_in;
+         data_in_dl2 <= data_in_dl1;
+         data_in_dl3 <= data_in_dl2;
+         data_in_dl4 <= data_in_dl3;
+      end
+   end
+      
    always_ff @(posedge clk)
    begin
       if (rst) begin
@@ -105,21 +137,16 @@ module rgb2udp_top
                   I_CURRENT_STATE <= T_STATES_IDLE;
 
             T_STATES_INIT :
-               I_CURRENT_STATE <= T_STATES_SYNC_FRM1;
-                   
-            T_STATES_SYNC_FRM1 :
-               I_CURRENT_STATE <= T_STATES_SYNC_FRM2;
-                                               
-            T_STATES_SYNC_FRM2 :
-               I_CURRENT_STATE <= T_STATES_ROW_HI;
-
-            T_STATES_SYNC_ROW1 :
-               I_CURRENT_STATE <= T_STATES_SYNC_ROW2;
-               
-            T_STATES_SYNC_ROW2 :
-               I_CURRENT_STATE <= T_STATES_ROW_HI;
-                              
-            T_STATES_ROW_HI :
+               I_CURRENT_STATE <= T_STATES_WAIT_ROW;
+                  
+            T_STATES_WAIT_ROW :
+               if((enable == 1'b1) & (in_frame == 1'b1)) begin           
+                  if((in_line_dl1 == 1'b0) && (in_line == 1'b1))            
+                     I_CURRENT_STATE <= T_STATES_ROW_HI;
+               end else 
+                  I_CURRENT_STATE <= T_STATES_IDLE;
+                                                 
+            T_STATES_ROW_HI :    
                I_CURRENT_STATE <= T_STATES_ROW_LO;
                         
             T_STATES_ROW_LO :
@@ -127,15 +154,15 @@ module rgb2udp_top
                                                                                                                                                                                
             T_STATES_IMAGE_DATA :
                if((enable == 1'b1) & (in_frame == 1'b1)) begin
-                  if((in_line_dl1 == 1'b0) && (in_line == 1'b1))
-//                     I_CURRENT_STATE <= T_STATES_SYNC_ROW1;
-//                  else
+                  if((in_line_dl3 == 1'b1) && (in_line_dl2 == 1'b0))
+                     I_CURRENT_STATE <= T_STATES_END_ROW;
+                  else
                      I_CURRENT_STATE <= T_STATES_IMAGE_DATA;
                end else
-                  I_CURRENT_STATE <= T_STATES_END;
-                 
-            T_STATES_END :
-               I_CURRENT_STATE <= T_STATES_IDLE;
+                  I_CURRENT_STATE <= T_STATES_IDLE;
+  
+            T_STATES_END_ROW :
+               I_CURRENT_STATE <= T_STATES_WAIT_ROW;
                      
          endcase
       end
@@ -144,16 +171,12 @@ module rgb2udp_top
    always_ff @(posedge clk)
    begin
       if (rst) begin
-         I_FRAME_CNT <= 8'h0;
+         I_FRAME_CNT <= 2'd0;
          in_frame_dl1 <= 1'b0;
       end else begin
          in_frame_dl1 <= in_frame;
          if(in_frame_dl1 == 1'b1 && in_frame == 1'b0) begin
-            if(I_FRAME_CNT < 8'd15) begin
-               I_FRAME_CNT <= I_FRAME_CNT + 8'd1;
-            end else begin
-               I_FRAME_CNT <= 8'd0;
-            end    
+            I_FRAME_CNT <= I_FRAME_CNT + 2'd1;    
          end            
       end
    end   
@@ -165,18 +188,16 @@ module rgb2udp_top
    begin: COL_CNT_EVAL
       if (rst == 1'b1) begin
          I_COL_CNT <= {16{1'b0}};
-         data_in_en_dl1 <= 1'b0;
+         I_COL_CNT_dl1 <= {16{1'b0}};
+         I_COL_CNT_dl2 <= {16{1'b0}};
       end else begin
-         if (enable == 1'b1) begin                
-            if (I_CURRENT_STATE == T_STATES_IMAGE_DATA) begin
-//               data_in_en_dl1 <= data_in_en;
-               if(in_line == 1'b0 || in_frame == 1'b0)
-                  I_COL_CNT <= {16{1'b0}}; 
-//               else if ((data_in_en_dl1 == 1'b1) && (data_in_en == 1'b0)) begin
-               else if (data_in_en == 1'b1) begin
-                  I_COL_CNT <= I_COL_CNT + 16'd1;    
-               end
-            end
+         if (enable == 1'b1 && in_frame == 1'b1) begin
+            I_COL_CNT_dl1 <= I_COL_CNT;
+            I_COL_CNT_dl2 <= I_COL_CNT_dl1;
+            if(I_CURRENT_STATE == T_STATES_IMAGE_DATA)
+               I_COL_CNT <= I_COL_CNT + 16'd1;                
+            else
+               I_COL_CNT <= {16{1'b0}};
          end else
             I_COL_CNT <= {16{1'b0}};
       end
@@ -189,17 +210,11 @@ module rgb2udp_top
    begin
       if (rst == 1'b1) begin
          I_ROW_CNT <= {16{1'b0}};
-         in_line_dl1 <= 1'b0;
       end else begin        
          if (enable == 1'b1) begin               
-            if (in_frame == 1'b1) begin
-               in_line_dl1 <= in_line;
-               in_line_dl2 <= in_line_dl1;
-               if (I_CURRENT_STATE == T_STATES_IMAGE_DATA) begin                     
-                  if (in_line_dl1 == 1'b1 && in_line == 1'b0) begin
-                     I_ROW_CNT <= I_ROW_CNT + 1'b1;
-                  end
-               end
+            if (in_frame == 1'b1) begin                 
+               if (in_line_dl4 == 1'b1 && in_line_dl3 == 1'b0)
+                  I_ROW_CNT <= I_ROW_CNT + 1'b1;
             end else
                I_ROW_CNT <= {16{1'b0}};
          end else
@@ -218,45 +233,36 @@ module rgb2udp_top
                
             T_STATES_INIT :
                I_TX_FIFO_WREN_WORD <= 1'b0;    
-               
-            T_STATES_SYNC_FRM1, T_STATES_SYNC_FRM2 :
-               if(I_ROW_CNT >= C_ROW_START)
+           
+            T_STATES_WAIT_ROW :
+               I_TX_FIFO_WREN_WORD <= 1'b0;  
+                          
+            T_STATES_ROW_HI :
+               if(tx_enable && (I_ROW_CNT >= C_ROW_START) && (I_ROW_CNT < C_ROW_STOP))
                   I_TX_FIFO_WREN_WORD <= 1'b1;
                else 
-                  I_TX_FIFO_WREN_WORD <= 1'b0;
-
-            T_STATES_SYNC_ROW1, T_STATES_SYNC_ROW2 :
-               if(I_ROW_CNT >= C_ROW_START)
-                  I_TX_FIFO_WREN_WORD <= 1'b1;
-               else 
-                  I_TX_FIFO_WREN_WORD <= 1'b0;  
-                  
-            T_STATES_ROW_HI, T_STATES_ROW_LO :
-               if(I_ROW_CNT >= C_ROW_START)
+                  I_TX_FIFO_WREN_WORD <= 1'b0;   
+                                 
+            T_STATES_ROW_LO :
+               if(tx_enable && (I_ROW_CNT >= C_ROW_START) && (I_ROW_CNT < C_ROW_STOP))
                   I_TX_FIFO_WREN_WORD <= 1'b1;
                else 
                   I_TX_FIFO_WREN_WORD <= 1'b0;               
                                                                                                           
-            T_STATES_IMAGE_DATA : begin            
-                  if(data_in_en == 1'b1 && in_line == 1'b1) begin
-                     if((I_ROW_CNT >= C_ROW_START) && (I_ROW_CNT < C_ROW_STOP)) begin
-                        if(((I_FRAME_CNT%4 == 0) && (I_ROW_CNT%4 == 0))
-                        || ((I_FRAME_CNT%4 == 1) && (I_ROW_CNT%4 == 1))
-                        || ((I_FRAME_CNT%4 == 2) && (I_ROW_CNT%4 == 2))
-                        || ((I_FRAME_CNT%4 == 3) && (I_ROW_CNT%4 == 3))) begin                        
-                           if((C_COL_START <= I_COL_CNT) && (I_COL_CNT < C_COL_STOP)) begin
-                              I_TX_FIFO_WREN_WORD <= 1'b1;
-                           end else
-                              I_TX_FIFO_WREN_WORD <= 1'b0;
+            T_STATES_IMAGE_DATA : begin
+                  if(tx_enable && in_line_dl3 == 1'b1) begin
+                     if((I_ROW_CNT >= C_ROW_START) && (I_ROW_CNT < C_ROW_STOP)) begin                        
+                        if((C_COL_START <= I_COL_CNT) && (I_COL_CNT < C_COL_STOP)) begin
+                           I_TX_FIFO_WREN_WORD <= 1'b1;
                         end else
-                           I_TX_FIFO_WREN_WORD <= 1'b0;
+                           I_TX_FIFO_WREN_WORD <= 1'b0;                                                
                      end else
                         I_TX_FIFO_WREN_WORD <= 1'b0;                        
                   end else
                      I_TX_FIFO_WREN_WORD <= 1'b0;
-               end         
-                                                                 
-            T_STATES_END : 
+               end
+                                                                
+            T_STATES_END_ROW : 
                I_TX_FIFO_WREN_WORD <= 1'b0;                 
          endcase
       end
@@ -272,45 +278,46 @@ module rgb2udp_top
                I_TX_FIFO_WRDAT_WORD <= {8{1'b0}};
             T_STATES_INIT :
                I_TX_FIFO_WRDAT_WORD <= 8'h00;
-            T_STATES_SYNC_FRM1 :
-               I_TX_FIFO_WRDAT_WORD <= 8'hCA;
-            T_STATES_SYNC_FRM2 :
-               I_TX_FIFO_WRDAT_WORD <= 8'hFE;
-            T_STATES_SYNC_ROW1 :
-               I_TX_FIFO_WRDAT_WORD <= 8'hCA;
-            T_STATES_SYNC_ROW2 :
-               I_TX_FIFO_WRDAT_WORD <= 8'hBA;                
+            T_STATES_WAIT_ROW :
+               I_TX_FIFO_WRDAT_WORD <= 8'h00;
             T_STATES_ROW_HI :
-               I_TX_FIFO_WRDAT_WORD <= I_ROW_CNT[15:8];
+               I_TX_FIFO_WRDAT_WORD <= {I_FRAME_CNT[0], I_ROW_CNT[14:8]};
             T_STATES_ROW_LO :
-               I_TX_FIFO_WRDAT_WORD <= I_ROW_CNT[7:0];
-  
-            T_STATES_IMAGE_DATA :                                                         
-//               I_TX_FIFO_WRDAT_WORD <= {data_in[23:21], data_in[15:13], data_in[7:6]};  
-               I_TX_FIFO_WRDAT_WORD <= I_COL_CNT[7:0];
-//               I_TX_FIFO_WRDAT_WORD <= (I_COL_CNT == 0 ?  8'h88 : (I_COL_CNT == 639 ?  8'h44 : 8'h55));
-                     
-            T_STATES_END :
+               I_TX_FIFO_WRDAT_WORD <= I_ROW_CNT[7:0];  
+            T_STATES_IMAGE_DATA : 
+            begin
+               if((I_ROW_CNT[0] == 1'b0) && (I_COL_CNT[0] == 0)) begin //even row, even column: 0, 2, 4, ..., 1278
+                  I_TX_FIFO_WRDAT_WORD <= {data_in_dl3[23:19], data_in_dl3[15:9], data_in_dl3[7:3]}[15:8];   // Pixel_0 RGB565[15:8], Pixel_2 RGB565[15:8], ...
+               end else if((I_ROW_CNT[0] == 1'b0) && (I_COL_CNT[0] == 1)) begin //even row, odd column: 1, 3, 5, ..., 1279                  
+                  I_TX_FIFO_WRDAT_WORD <= {data_in_dl4[23:19], data_in_dl4[15:9], data_in_dl4[7:3]}[7:0];    // Pixel_0 RGB565[7:0], Pixel_2 RGB565[7:0], ...
+               end else if((I_ROW_CNT[0] == 1'b1) && (I_COL_CNT[0] == 0)) begin //odd row, even column: 0, 2, 4, ..., 1278                  
+                  I_TX_FIFO_WRDAT_WORD <= {data_in_dl2[23:19], data_in_dl2[15:9], data_in_dl2[7:3]}[15:8];  // Pixel_1 RGB565[15:8], Pixel_3 RGB565[15:8], ...
+               end else if((I_ROW_CNT[0] == 1'b1) && (I_COL_CNT[0] == 1)) begin //odd row, odd column: 1, 3, 5, ..., 1279              
+                  I_TX_FIFO_WRDAT_WORD <= {data_in_dl3[23:19], data_in_dl3[15:9], data_in_dl3[7:3]}[7:0];   // Pixel_1 RGB565[7:0], Pixel_3 RGB565[7:0], ...
+               end  
+            end
+                                           
+            T_STATES_END_ROW :
                I_TX_FIFO_WRDAT_WORD <= 8'hEE;                                
          endcase
       end
    end
 
+   //Enable transmit over Ethernet for every received CMOS line
+   assign tx_enable = 1'b1;
+   
+   //Enable transmit over Ethernet for every odd frame send odd line and for even frame send even line, we use this case if we have issue with ethernet bandwidth
+//   assign tx_enable = ((I_FRAME_CNT[0] == 0) && (I_ROW_CNT[0] == 0)) || ((I_FRAME_CNT[0] == 1) && (I_ROW_CNT[0] == 1));
    
    assign tx_length = C_PACKET_LENGTH; 
-   assign tx_reset = (I_CURRENT_STATE == T_STATES_INIT);
+   assign tx_reset = (in_frame_dl1 == 1'b0 && in_frame == 1'b1) ? 1'b1 : 1'b0;
+   
    assign tx_data =  I_TX_FIFO_WRDAT_WORD;
-   assign tx_valid =  I_TX_FIFO_WREN_WORD;   
-   
-   assign tx_last = (I_COL_CNT == C_COL_STOP)
-                     && ((I_FRAME_CNT%4 == 0)&&(I_ROW_CNT%4 == 0)
-                     ||  (I_FRAME_CNT%4 == 1)&&(I_ROW_CNT%4 == 1)
-                     ||  (I_FRAME_CNT%4 == 2)&&(I_ROW_CNT%4 == 2)
-                     ||  (I_FRAME_CNT%4 == 3)&&(I_ROW_CNT%4 == 3));
+   assign tx_valid =  I_TX_FIFO_WREN_WORD;
+   assign tx_last = tx_enable && (I_ROW_CNT < C_ROW_STOP) && (I_CURRENT_STATE == T_STATES_END_ROW);
 
-   assign debug = { 1'b0, 1'b0, 1'b0, 1'b0,  1'b0, tx_last, tx_valid};
-//   assign debug = { 1'b0, 1'b0, 1'b0, 1'b0,  (I_CURRENT_STATE == T_STATES_IMAGE_DATA), (I_CURRENT_STATE == T_STATES_ROW_HI) | (I_CURRENT_STATE == T_STATES_SYNC_FRM1), (I_CURRENT_STATE == T_STATES_INIT) | (I_CURRENT_STATE == T_STATES_END), (I_CURRENT_STATE == T_STATES_IDLE)};
-   
+   assign debug = { 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, (I_CURRENT_STATE == T_STATES_INIT), (I_CURRENT_STATE == T_STATES_IMAGE_DATA),  tx_last};
+
 endmodule: rgb2udp_top
 
 /*

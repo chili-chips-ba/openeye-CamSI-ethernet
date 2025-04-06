@@ -3,6 +3,13 @@
 #  Constraints for Artix7-35, Puzhi board
 #========================================================================
 
+# Configuration options
+set_property CONFIG_VOLTAGE 3.3 [current_design]
+set_property CFGBVS VCCO [current_design]
+
+# PUZHI 200MHz external clock
+create_clock -period 5.000 -name sys_clk_pin -waveform {0.000 2.500} -add [get_ports sys_clk_p]
+
 #-------------------------------------------------------------------------
 # clk, reset and misc
 set_property -dict {PACKAGE_PIN R4 IOSTANDARD DIFF_SSTL135} [get_ports sys_clk_p]

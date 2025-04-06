@@ -27,9 +27,9 @@ def main():
    sock.bind(('',port))
    sock.settimeout(10)
    
-   # image of 1280 x 700 pixels , with 3 channels 
+   # image of 1280 x 720 pixels , with 3 channels 
    xdim =1280
-   ydim =700
+   ydim =720
    channels=3
    color_bg=(0,0,0)
    imgdim = (ydim, xdim, channels)
@@ -66,8 +66,8 @@ def main():
             #if(abs(y - y_prev) > 4):
             #   print(f"count ", y, y_prev, abs(y - y_prev) )
             #y_prev = y
-         else:
-            print("error:", package_len, data[0], data[1], data[2], data[3])
+         #else:
+            #print("error:", package_len, data[0], data[1], data[2], data[3])
          recv_prev = recv
          recv += 1
          frame_prev = frame

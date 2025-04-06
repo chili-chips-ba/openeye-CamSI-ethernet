@@ -291,11 +291,7 @@ assign phy_reset_n = !rst;
 eth_mac_1g_rgmii_fifo #(
     .TARGET(TARGET),
     .IODDR_STYLE("IODDR"),
-`ifdef PUZHI
-    .CLOCK_INPUT_STYLE("BUFR"), // Puzhi
-`else
-    .CLOCK_INPUT_STYLE("BUFG"), // Trenz 
-`endif
+    .CLOCK_INPUT_STYLE("BUFR"), // BUFR for Puzhi, BUFG for Trenz
     .USE_CLK90("TRUE"),
     .ENABLE_PADDING(1),
     .MIN_FRAME_LENGTH(64),
@@ -568,7 +564,7 @@ udp_complete_inst (
 //);
 
 axis_async_fifo #(
-    .DEPTH(8192),
+    .DEPTH(2048),
     .DATA_WIDTH(8),
     .KEEP_ENABLE(0),
     .LAST_ENABLE(1),

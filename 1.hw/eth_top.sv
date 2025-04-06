@@ -36,7 +36,7 @@
 //
 //              https://opensource.org/license/bsd-3-clause
 //------------------------------------------------------------------------
-// Description: This is the Chip top-level file. It includes:
+// Description: This is the Chip top-level file for Puzhi Artix35 board. It includes:
 //   - Main PLL with top-level clock and reset generation
 //   - Xilinx-specific IDELAY controller
 //   - I2C Master for loading configuration into camera
@@ -45,15 +45,18 @@
 //        - raw2rgb
 //   - Asynchronous FIFO
 //   - HDMI monitor back-end
+//   - Package RGB data to UDP
+//   - UDP Ethernet Video Stream Out
 //   - Misc and Debug utilities
 //========================================================================
 
-module top 
+module eth_top 
    import top_pkg::*;
    import hdmi_pkg::*;
 (
-   input logic   areset,   // external active-1 asynchronous reset
-   input logic   clk_ext,  // external 100MHz clock source
+   input logic sys_clk_p,
+   input logic sys_clk_n,
+   input logic sys_rst_n,   
 
   //I2C_Master to Camera
 `ifdef COCOTB_SIM
@@ -76,9 +79,24 @@ module top
    output bus3_t hdmi_dat_p,
    output bus3_t hdmi_dat_n,
    
+   /*
+   * Ethernet: 1000BASE-T RGMII
+   */
+   input logic    phy_rgmii_rx_clk,
+   input bus4_t   phy_rgmii_rxd,
+   input logic    phy_rgmii_rx_ctl,
+        
+   output logic   phy_rgmii_tx_clk,
+   output bus4_t  phy_rgmii_txd,
+   output logic   phy_rgmii_tx_ctl,
+   output logic   phy_rgmii_reset_n,
+    
+   output logic   phy_mdio_mdc,
+   inout logic    phy_mdio_io,
+
   //Misc/Debug
-   output bus3_t led,
-   output bus16_t debug_pins
+   output bus2_t led,
+   output bus8_t debug_pins
 );
 
 `ifdef COCOTB_SIM
@@ -88,15 +106,29 @@ glbl glbl();
 // Clock and reset gen
 //--------------------------------
    logic reset, i2c_areset_n;   
-   logic clk_100, clk_180, clk_200, clk_1hz, strobe_400kHz;
+   logic clk_100, clk_125, clk_125_90, clk_180, clk_200, clk_1hz, strobe_400kHz;
+
+   IBUFDS #(
+      .DIFF_TERM("FALSE"),       
+      .IBUF_LOW_PWR("TRUE"),     
+      .IOSTANDARD("DEFAULT")     
+   ) IBUFDS_inst (
+      .O(clk_ext), 
+      .I(sys_clk_p),  
+      .IB(sys_clk_n) 
+   );
+   
+   assign phy_rgmii_int_n = 1'b1;
+   assign areset = ~sys_rst_n;
 
    clkrst_gen u_clkrst_gen (
       .reset_ext     (areset),        //i
-      .clk_ext       (clk_ext),       //i
+      .clk_ext       (clk_ext),       //i: 200MHz Puzhi
                                        
       .clk_100       (clk_100),       //o: 100MHz 
-      .clk_180       (clk_180),       //o: 180MHz
       .clk_200       (clk_200),       //o: 200MHz 
+      .clk_125       (clk_125),       //o: 125MHz 
+      .clk_125_90    (clk_125_90),    //o: 125MHz, PHASE 90
       .clk_1hz       (clk_1hz),       //o: 1Hz
       .strobe_400kHz (strobe_400kHz), //o: pulse1 at 400kHz
 
@@ -104,12 +136,11 @@ glbl glbl();
       .cam_en        (cam_en),        //o
       .i2c_areset_n  (i2c_areset_n)   //o
    );
-
+  
 //--------------------------------
 // I2C Master
 //--------------------------------
-   bus8_t debug_i2c;
-
+   bus8_t      debug_i2c;
    i2c_top  #(
       .I2C_SLAVE_ADDR (top_pkg::I2C_SLAVE_ADDR),
       .NUM_REGISTERS  (top_pkg::NUM_REGISTERS)
@@ -130,12 +161,11 @@ glbl glbl();
 //--------------------------------
 // CSI_RX
 //--------------------------------
-   logic           csi_byte_clk;
-   lane_raw_data_t csi_word_data;
-   logic           csi_word_valid;
-   logic           csi_in_line, csi_in_frame;   
-
-   bus8_t         debug_csi;
+   logic             csi_byte_clk;
+   lane_raw_data_t   csi_word_data;
+   logic             csi_word_valid;
+   logic             csi_in_line, csi_in_frame;   
+   bus8_t            debug_csi;
     
    csi_rx_top u_csi_rx_top (
       .ref_clock              (clk_200),        //i 
@@ -146,8 +176,8 @@ glbl glbl();
       .cam_dphy_dat           (cam_dphy_dat),   //i'lane_diff_t
       .cam_en                 (cam_en),         //i 
 
-     //CSI to internal video pipeline     
-      .csi_byte_clk           (csi_byte_clk),   //o
+     //CSI to internal video pipeline  
+      .csi_byte_clk           (csi_byte_clk),   //o      
       .csi_unpack_raw_dat     (csi_word_data),  //o'lane_raw_data_t
       .csi_unpack_raw_dat_vld (csi_word_valid), //o
 
@@ -229,7 +259,7 @@ glbl glbl();
      
      //synchronization
       .hdmi_reset_n (hdmi_reset_n), //i
-
+  
       .hdmi_frame   (hdmi_frame),   //o
 
       .blank        (hdmi_blank),   //o
@@ -245,38 +275,96 @@ glbl glbl();
       .x            (x),            //o'bus12_t
       .y            (y)             //o'bus11_t
    );
-   
 
+   logic       tx_clk;
+   logic       tx_reset;
+   logic       tx_valid;
+   logic       tx_ready;
+   logic       tx_last;    
+   bus16_t     tx_length;
+   bus8_t      tx_data;  
+   bus8_t      debug_udp;
+          
+   rgb2udp_top u_rgb2udp (
+      .clk        (csi_byte_clk),
+      .rst        (reset),
+      .enable     (cam_en),
+      
+      .in_frame   (csi_in_frame),
+      .in_line    (rgb_reading),
+             
+      .data_in    (rgb_pix),
+      .data_in_en (rgb_reading),
+      
+      .tx_length  (tx_length),
+      .tx_data    (tx_data),
+      .tx_valid   (tx_valid),
+      .tx_ready   (tx_ready),
+      .tx_last    (tx_last),
+      .tx_reset   (tx_reset),
+      
+      .debug      (debug_udp)            
+   );      
+   
 //--------------------------------
-// Misc and Debug
+// Ethernet
 //--------------------------------
+
+   // IODELAY elements for RGMII interface to PHY
+   bus4_t   phy_rgmii_rxd_delay;
+   logic    phy_rgmii_rx_ctl_delay;
+  
+   phy_rx_idelay u_phy_rx_idelay (
+      .phy_rxd          (phy_rgmii_rxd),
+      .phy_rxd_delay    (phy_rgmii_rxd_delay),
+      .phy_rx_ctl       (phy_rgmii_rx_ctl),
+      .phy_rx_ctl_delay (phy_rgmii_rx_ctl_delay)      
+   );
+   
+   // buffer TX clock
+   BUFG tx_clk_bufg (
+      .I(csi_byte_clk),
+      .O(tx_clk)
+   );
+           
+   udp_stream #(
+      .TARGET("XILINX")
+   ) u_udp_stream (
+      /*
+       * Clock: 125MHz
+       * Synchronous reset
+       */
+      .clk(clk_125),
+      .clk90(clk_125_90),
+      .rst(reset),
+      
+      /*
+       * Ethernet: 1000BASE-T RGMII
+       */
+      .phy_rx_clk (phy_rgmii_rx_clk       ),
+      .phy_rxd    (phy_rgmii_rxd_delay    ),
+      .phy_rx_ctl (phy_rgmii_rx_ctl_delay ),
+      .phy_tx_clk (phy_rgmii_tx_clk       ),
+      .phy_txd    (phy_rgmii_txd          ),
+      .phy_tx_ctl (phy_rgmii_tx_ctl       ),
+      .phy_reset_n(phy_rgmii_reset_n      ),
+      .phy_int_n  (phy_rgmii_int_n        ),
+       
+      .tx_clk     (tx_clk        ),
+      .tx_length  (tx_length     ),
+      .tx_data    (tx_data       ),
+      .tx_valid   (tx_valid      ),
+      .tx_ready   (tx_ready      ),
+      .tx_last    (tx_last       ),
+      .tx_reset   (tx_reset      )
+   );
+
    assign led[0] = cam_en;
-   assign led[1] = clk_1hz;
-   assign led[2] = csi_in_frame; 
+   assign led[1] = clk_1hz; 
 
-   bus8_t debug_hdmi;
-   assign debug_hdmi = {  
-      hdmi_reset_n,
-      hdmi_frame,
-      hdmi_hsync,
-      hdmi_vsync,
-      hdmi_blank,
-      hdmi_clk,
-      rgb_valid,
-      1'b0
-   };
+assign debug_pins = { tx_reset, tx_last, tx_valid, tx_ready, /*hdmi_reset_n, hdmi_hsync, hdmi_vsync, hdmi_frame,*/ rgb_reading,  hdmi_blank, csi_in_line, csi_in_frame};
 
-   assign debug_pins = {
-      //clk_180, 
-      debug_fifo,
-      debug_hdmi[7:3],
-      debug_csi[7:1] 
-      //y
-      //debug_csi[7:0],
-      //debug_i2c[7:0]
-   };
-   
-endmodule: top
+endmodule: eth_top
 
 /*
 ------------------------------------------------------------------------------
@@ -285,4 +373,5 @@ Version History:
  2024/2/30  AnelH: Initial creation
  2024/3/14  Armin Zunic: updated based on sim results
  2024/11/12 Armin Zunic: updated for code readability
+ 2025/03/02 AnelH: updated for code Puzhi board and UDP Ethernet logic
 */

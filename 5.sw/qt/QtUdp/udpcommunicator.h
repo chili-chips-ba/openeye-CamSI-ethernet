@@ -5,6 +5,7 @@
 #include <QScopedPointer>
 #include <QtNetwork>
 #include <QUdpSocket>
+#include <QDebug>
 
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
@@ -17,10 +18,11 @@ public:
     explicit UDPCommunicator(QObject *parent = 0);
     ~UDPCommunicator();
 
+
 private:
-    QSharedPointer<QTimer> mDisplayTimer;
     QUdpSocket *socket = nullptr;
     QHostAddress hostAddress;
+    QSharedPointer<QTimer> mDisplayTimer;      
     QByteArray datagram;
     cv::Mat image;
     qint64 currentTime;

@@ -17,7 +17,7 @@ CXXFLAGS      = -nologo -Zc:wchar_t -FS -Zc:rvalueCast -Zc:inline -Zc:strictStri
 INCPATH       = -I. -I..\opencv-build\install\include -IC:\Qt\5.11.1\msvc2015_64\include -IC:\Qt\5.11.1\msvc2015_64\include\QtWidgets -IC:\Qt\5.11.1\msvc2015_64\include\QtGui -IC:\Qt\5.11.1\msvc2015_64\include\QtANGLE -IC:\Qt\5.11.1\msvc2015_64\include\QtNetwork -IC:\Qt\5.11.1\msvc2015_64\include\QtCore -Irelease -I. -I\include -IC:\Qt\5.11.1\msvc2015_64\mkspecs\win32-msvc 
 LINKER        = link
 LFLAGS        = /NOLOGO /DYNAMICBASE /NXCOMPAT /INCREMENTAL:NO /SUBSYSTEM:CONSOLE "/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'"
-LIBS          = /LIBPATH:D:\GitHub\openeye-CSI\5.sw\qt\opencv-build\install\x64\vc14\lib D:\GitHub\openeye-CSI\5.sw\qt\opencv-build\install\x64\vc14\lib\opencv_core4100.lib D:\GitHub\openeye-CSI\5.sw\qt\opencv-build\install\x64\vc14\lib\opencv_imgproc4100.lib D:\GitHub\openeye-CSI\5.sw\qt\opencv-build\install\x64\vc14\lib\opencv_highgui4100.lib D:\GitHub\openeye-CSI\5.sw\qt\opencv-build\install\x64\vc14\lib\opencv_imgcodecs4100.lib D:\GitHub\openeye-CSI\5.sw\qt\opencv-build\install\x64\vc14\lib\opencv_videoio4100.lib D:\GitHub\openeye-CSI\5.sw\qt\opencv-build\install\x64\vc14\lib\opencv_video4100.lib D:\GitHub\openeye-CSI\5.sw\qt\opencv-build\install\x64\vc14\lib\opencv_calib3d4100.lib D:\GitHub\openeye-CSI\5.sw\qt\opencv-build\install\x64\vc14\lib\opencv_photo4100.lib D:\GitHub\openeye-CSI\5.sw\qt\opencv-build\install\x64\vc14\lib\opencv_features2d4100.lib /LIBPATH:C:\Qt\5.11.1\msvc2015_64\lib C:\Qt\5.11.1\msvc2015_64\lib\Qt5Widgets.lib C:\Qt\5.11.1\msvc2015_64\lib\Qt5Gui.lib C:\Qt\5.11.1\msvc2015_64\lib\Qt5Network.lib C:\Qt\5.11.1\msvc2015_64\lib\Qt5Core.lib 
+LIBS          = /LIBPATH:D:\GitHub\openeye-CSI\csi-ethernet\5.sw\qt\opencv-build\install\x64\vc14\lib D:\GitHub\openeye-CSI\csi-ethernet\5.sw\qt\opencv-build\install\x64\vc14\lib\opencv_core4100.lib D:\GitHub\openeye-CSI\csi-ethernet\5.sw\qt\opencv-build\install\x64\vc14\lib\opencv_imgproc4100.lib D:\GitHub\openeye-CSI\csi-ethernet\5.sw\qt\opencv-build\install\x64\vc14\lib\opencv_highgui4100.lib D:\GitHub\openeye-CSI\csi-ethernet\5.sw\qt\opencv-build\install\x64\vc14\lib\opencv_imgcodecs4100.lib D:\GitHub\openeye-CSI\csi-ethernet\5.sw\qt\opencv-build\install\x64\vc14\lib\opencv_videoio4100.lib D:\GitHub\openeye-CSI\csi-ethernet\5.sw\qt\opencv-build\install\x64\vc14\lib\opencv_video4100.lib D:\GitHub\openeye-CSI\csi-ethernet\5.sw\qt\opencv-build\install\x64\vc14\lib\opencv_calib3d4100.lib D:\GitHub\openeye-CSI\csi-ethernet\5.sw\qt\opencv-build\install\x64\vc14\lib\opencv_photo4100.lib D:\GitHub\openeye-CSI\csi-ethernet\5.sw\qt\opencv-build\install\x64\vc14\lib\opencv_features2d4100.lib /LIBPATH:C:\Qt\5.11.1\msvc2015_64\lib C:\Qt\5.11.1\msvc2015_64\lib\Qt5Widgets.lib C:\Qt\5.11.1\msvc2015_64\lib\Qt5Gui.lib C:\Qt\5.11.1\msvc2015_64\lib\Qt5Network.lib C:\Qt\5.11.1\msvc2015_64\lib\Qt5Core.lib 
 QMAKE         = C:\Qt\5.11.1\msvc2015_64\bin\qmake.exe
 IDC           = idc
 IDL           = midl /NOLOGO
@@ -279,6 +279,7 @@ release\moc_mainwindow.cpp: C:\Qt\5.11.1\msvc2015_64\include\QtWidgets\QMainWind
 		C:\Qt\5.11.1\msvc2015_64\include\QtWidgets\QLabel \
 		C:\Qt\5.11.1\msvc2015_64\include\QtWidgets\qlabel.h \
 		C:\Qt\5.11.1\msvc2015_64\include\QtWidgets\qframe.h \
+		ui_mainwindow.h \
 		udpcommunicator.h \
 		C:\Qt\5.11.1\msvc2015_64\include\QtCore\QObject \
 		C:\Qt\5.11.1\msvc2015_64\include\QtCore\QScopedPointer \
@@ -447,6 +448,7 @@ release\moc_mainwindow.cpp: C:\Qt\5.11.1\msvc2015_64\include\QtWidgets\QMainWind
 		C:\Qt\5.11.1\msvc2015_64\include\QtCore\QHash \
 		C:\Qt\5.11.1\msvc2015_64\include\QtNetwork\qsslkey.h \
 		C:\Qt\5.11.1\msvc2015_64\include\QtNetwork\qtnetworkversion.h \
+		C:\Qt\5.11.1\msvc2015_64\include\QtCore\QDebug \
 		..\opencv-build\install\include\opencv2\core\core.hpp \
 		..\opencv-build\install\include\opencv2\core.hpp \
 		..\opencv-build\install\include\opencv2\core\cvdef.h \
@@ -486,7 +488,7 @@ release\moc_mainwindow.cpp: C:\Qt\5.11.1\msvc2015_64\include\QtWidgets\QMainWind
 		mainwindow.h \
 		release\moc_predefs.h \
 		C:\Qt\5.11.1\msvc2015_64\bin\moc.exe
-	C:\Qt\5.11.1\msvc2015_64\bin\moc.exe $(DEFINES) --compiler-flavor=msvc --include release/moc_predefs.h -IC:/Qt/5.11.1/msvc2015_64/mkspecs/win32-msvc -ID:/GitHub/openeye-CSI/5.sw/qt/QtUdp -ID:/GitHub/openeye-CSI/5.sw/qt/opencv-build/install/include -IC:/Qt/5.11.1/msvc2015_64/include -IC:/Qt/5.11.1/msvc2015_64/include/QtWidgets -IC:/Qt/5.11.1/msvc2015_64/include/QtGui -IC:/Qt/5.11.1/msvc2015_64/include/QtANGLE -IC:/Qt/5.11.1/msvc2015_64/include/QtNetwork -IC:/Qt/5.11.1/msvc2015_64/include/QtCore -I"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\INCLUDE" -I"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\ATLMFC\INCLUDE" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.10240.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\include\um" -I"C:\Program Files (x86)\Windows Kits\8.1\include\\shared" -I"C:\Program Files (x86)\Windows Kits\8.1\include\\um" -I"C:\Program Files (x86)\Windows Kits\8.1\include\\winrt" mainwindow.h -o release\moc_mainwindow.cpp
+	C:\Qt\5.11.1\msvc2015_64\bin\moc.exe $(DEFINES) --compiler-flavor=msvc --include release/moc_predefs.h -IC:/Qt/5.11.1/msvc2015_64/mkspecs/win32-msvc -ID:/GitHub/openeye-CSI/csi-ethernet/5.sw/qt/QtUdp -ID:/GitHub/openeye-CSI/csi-ethernet/5.sw/qt/opencv-build/install/include -IC:/Qt/5.11.1/msvc2015_64/include -IC:/Qt/5.11.1/msvc2015_64/include/QtWidgets -IC:/Qt/5.11.1/msvc2015_64/include/QtGui -IC:/Qt/5.11.1/msvc2015_64/include/QtANGLE -IC:/Qt/5.11.1/msvc2015_64/include/QtNetwork -IC:/Qt/5.11.1/msvc2015_64/include/QtCore -I"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\INCLUDE" -I"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\ATLMFC\INCLUDE" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.10240.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\include\um" -I"C:\Program Files (x86)\Windows Kits\8.1\include\\shared" -I"C:\Program Files (x86)\Windows Kits\8.1\include\\um" -I"C:\Program Files (x86)\Windows Kits\8.1\include\\winrt" mainwindow.h -o release\moc_mainwindow.cpp
 
 release\moc_udpcommunicator.cpp: C:\Qt\5.11.1\msvc2015_64\include\QtCore\QObject \
 		C:\Qt\5.11.1\msvc2015_64\include\QtCore\qobject.h \
@@ -734,6 +736,7 @@ release\moc_udpcommunicator.cpp: C:\Qt\5.11.1\msvc2015_64\include\QtCore\QObject
 		C:\Qt\5.11.1\msvc2015_64\include\QtNetwork\qudpsocket.h \
 		C:\Qt\5.11.1\msvc2015_64\include\QtNetwork\qtnetworkversion.h \
 		C:\Qt\5.11.1\msvc2015_64\include\QtNetwork\QUdpSocket \
+		C:\Qt\5.11.1\msvc2015_64\include\QtCore\QDebug \
 		..\opencv-build\install\include\opencv2\core\core.hpp \
 		..\opencv-build\install\include\opencv2\core.hpp \
 		..\opencv-build\install\include\opencv2\core\cvdef.h \
@@ -773,7 +776,7 @@ release\moc_udpcommunicator.cpp: C:\Qt\5.11.1\msvc2015_64\include\QtCore\QObject
 		udpcommunicator.h \
 		release\moc_predefs.h \
 		C:\Qt\5.11.1\msvc2015_64\bin\moc.exe
-	C:\Qt\5.11.1\msvc2015_64\bin\moc.exe $(DEFINES) --compiler-flavor=msvc --include release/moc_predefs.h -IC:/Qt/5.11.1/msvc2015_64/mkspecs/win32-msvc -ID:/GitHub/openeye-CSI/5.sw/qt/QtUdp -ID:/GitHub/openeye-CSI/5.sw/qt/opencv-build/install/include -IC:/Qt/5.11.1/msvc2015_64/include -IC:/Qt/5.11.1/msvc2015_64/include/QtWidgets -IC:/Qt/5.11.1/msvc2015_64/include/QtGui -IC:/Qt/5.11.1/msvc2015_64/include/QtANGLE -IC:/Qt/5.11.1/msvc2015_64/include/QtNetwork -IC:/Qt/5.11.1/msvc2015_64/include/QtCore -I"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\INCLUDE" -I"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\ATLMFC\INCLUDE" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.10240.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\include\um" -I"C:\Program Files (x86)\Windows Kits\8.1\include\\shared" -I"C:\Program Files (x86)\Windows Kits\8.1\include\\um" -I"C:\Program Files (x86)\Windows Kits\8.1\include\\winrt" udpcommunicator.h -o release\moc_udpcommunicator.cpp
+	C:\Qt\5.11.1\msvc2015_64\bin\moc.exe $(DEFINES) --compiler-flavor=msvc --include release/moc_predefs.h -IC:/Qt/5.11.1/msvc2015_64/mkspecs/win32-msvc -ID:/GitHub/openeye-CSI/csi-ethernet/5.sw/qt/QtUdp -ID:/GitHub/openeye-CSI/csi-ethernet/5.sw/qt/opencv-build/install/include -IC:/Qt/5.11.1/msvc2015_64/include -IC:/Qt/5.11.1/msvc2015_64/include/QtWidgets -IC:/Qt/5.11.1/msvc2015_64/include/QtGui -IC:/Qt/5.11.1/msvc2015_64/include/QtANGLE -IC:/Qt/5.11.1/msvc2015_64/include/QtNetwork -IC:/Qt/5.11.1/msvc2015_64/include/QtCore -I"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\INCLUDE" -I"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\ATLMFC\INCLUDE" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.10240.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\include\um" -I"C:\Program Files (x86)\Windows Kits\8.1\include\\shared" -I"C:\Program Files (x86)\Windows Kits\8.1\include\\um" -I"C:\Program Files (x86)\Windows Kits\8.1\include\\winrt" udpcommunicator.h -o release\moc_udpcommunicator.cpp
 
 compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:
@@ -923,6 +926,7 @@ release\main.obj: main.cpp C:\Qt\5.11.1\msvc2015_64\include\QtWidgets\QApplicati
 		C:\Qt\5.11.1\msvc2015_64\include\QtWidgets\QLabel \
 		C:\Qt\5.11.1\msvc2015_64\include\QtWidgets\qlabel.h \
 		C:\Qt\5.11.1\msvc2015_64\include\QtWidgets\qframe.h \
+		ui_mainwindow.h \
 		udpcommunicator.h \
 		C:\Qt\5.11.1\msvc2015_64\include\QtCore\QObject \
 		C:\Qt\5.11.1\msvc2015_64\include\QtCore\QScopedPointer \
@@ -1089,6 +1093,7 @@ release\main.obj: main.cpp C:\Qt\5.11.1\msvc2015_64\include\QtWidgets\QApplicati
 		C:\Qt\5.11.1\msvc2015_64\include\QtCore\QHash \
 		C:\Qt\5.11.1\msvc2015_64\include\QtNetwork\qsslkey.h \
 		C:\Qt\5.11.1\msvc2015_64\include\QtNetwork\qtnetworkversion.h \
+		C:\Qt\5.11.1\msvc2015_64\include\QtCore\QDebug \
 		..\opencv-build\install\include\opencv2\core\core.hpp \
 		..\opencv-build\install\include\opencv2\core.hpp \
 		..\opencv-build\install\include\opencv2\core\cvdef.h \
@@ -1244,6 +1249,7 @@ release\mainwindow.obj: mainwindow.cpp mainwindow.h \
 		C:\Qt\5.11.1\msvc2015_64\include\QtWidgets\QLabel \
 		C:\Qt\5.11.1\msvc2015_64\include\QtWidgets\qlabel.h \
 		C:\Qt\5.11.1\msvc2015_64\include\QtWidgets\qframe.h \
+		ui_mainwindow.h \
 		udpcommunicator.h \
 		C:\Qt\5.11.1\msvc2015_64\include\QtCore\QObject \
 		C:\Qt\5.11.1\msvc2015_64\include\QtCore\QScopedPointer \
@@ -1412,6 +1418,7 @@ release\mainwindow.obj: mainwindow.cpp mainwindow.h \
 		C:\Qt\5.11.1\msvc2015_64\include\QtCore\QHash \
 		C:\Qt\5.11.1\msvc2015_64\include\QtNetwork\qsslkey.h \
 		C:\Qt\5.11.1\msvc2015_64\include\QtNetwork\qtnetworkversion.h \
+		C:\Qt\5.11.1\msvc2015_64\include\QtCore\QDebug \
 		..\opencv-build\install\include\opencv2\core\core.hpp \
 		..\opencv-build\install\include\opencv2\core.hpp \
 		..\opencv-build\install\include\opencv2\core\cvdef.h \
@@ -1678,8 +1685,7 @@ release\mainwindow.obj: mainwindow.cpp mainwindow.h \
 		C:\Qt\5.11.1\msvc2015_64\include\QtWidgets\qwhatsthis.h \
 		C:\Qt\5.11.1\msvc2015_64\include\QtWidgets\qwidgetaction.h \
 		C:\Qt\5.11.1\msvc2015_64\include\QtWidgets\qwizard.h \
-		C:\Qt\5.11.1\msvc2015_64\include\QtWidgets\qtwidgetsversion.h \
-		C:\Qt\5.11.1\msvc2015_64\include\QtCore\QDebug
+		C:\Qt\5.11.1\msvc2015_64\include\QtWidgets\qtwidgetsversion.h
 
 release\udpcommunicator.obj: udpcommunicator.cpp udpcommunicator.h \
 		C:\Qt\5.11.1\msvc2015_64\include\QtCore\QObject \
@@ -1928,6 +1934,7 @@ release\udpcommunicator.obj: udpcommunicator.cpp udpcommunicator.h \
 		C:\Qt\5.11.1\msvc2015_64\include\QtNetwork\qudpsocket.h \
 		C:\Qt\5.11.1\msvc2015_64\include\QtNetwork\qtnetworkversion.h \
 		C:\Qt\5.11.1\msvc2015_64\include\QtNetwork\QUdpSocket \
+		C:\Qt\5.11.1\msvc2015_64\include\QtCore\QDebug \
 		..\opencv-build\install\include\opencv2\core\core.hpp \
 		..\opencv-build\install\include\opencv2\core.hpp \
 		..\opencv-build\install\include\opencv2\core\cvdef.h \
