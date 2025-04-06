@@ -13,11 +13,11 @@
 *temp*
 *.gprj.user
 
-*vivado.cache*
-*vivado.hw*
-*vivado.ip_user_files*
-*vivado.runs*
-*vivado.sim*
+*csi_eth.cache*
+*csi_eth.hw*
+*csi_eth.ip_user_files*
+*csi_eth.runs*
+*csi_eth.sim*
 
 *\#*\#
 *\#*
