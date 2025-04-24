@@ -21,3 +21,6 @@
 
 *\#*\#
 *\#*
+/5.sw/qt/QtUdp/release/*.obj
+/5.sw/qt/QtUdp/release/moc_*
+/5.sw/qt/QtUdp/debug
