@@ -26,13 +26,15 @@ Unfortunately, since we had no documentation for this board, we only discovered 
   <video src="0.doc/Video/Puzhi-2lane-improvized.mp4" controls width="600"></video>
 </p>
 
+[Video Link](https://github.com/user-attachments/assets/f2797042-4659-47c1-8f70-43437a3e3c2f)
+
 ## Block Diagram Explanation
 
 The block diagram illustrates the complete camera-to-HDMI and camera-to-UDP-stream data flow implemented on the FPGA module (eth_top) and how the video stream is finally displayed on a PC.
 
-<div style="display: flex; justify-content: center; margin: 20px;">
+<p align="center" style="margin: 20px;">
   <img width="600" src="0.doc/Images/Block Diagram.png" >
-</div>
+<p>
 
 The system has two parallel video outputs:
 Local HDMI display directly from FPGA and UDP video stream sent over Ethernet to a PC, where the PC decodes and displays the video.
@@ -246,10 +248,10 @@ This strategy fits the Ethernet bandwidth constraints while maintaining real-tim
     Video sample for openeye-CamSI UDP stream coded in C++ using QT 5.11.1 and OpenCV library.
 
 <p align="center" style="margin: 20px;">
-    <video src="0.doc/Video/qt_udp.mp4" controls width="600" type="video/mp4" ></video>
+    <video src="0.doc/Video/qt_udp.mp4" controls type="video/mp4" width="600" ></video>
 </p>
 
-https://github.com/user-attachments/assets/b3c2df39-271b-41c7-b2c2-9db1b7daa56e
+[Qt_UDP Video Link](https://github.com/user-attachments/assets/84bee7db-d9ba-4833-be93-3879f710f8cc)
 
     Video sample for openeye-CamSI UDP stream coded in Python using OpenCV and NumPy library.
 
@@ -257,7 +259,7 @@ https://github.com/user-attachments/assets/b3c2df39-271b-41c7-b2c2-9db1b7daa56e
     <video src="0.doc/Video/python_udp.mp4" controls type="video/mp4" width="600" ></video>
 </p>
 
-https://github.com/user-attachments/assets/c0328355-8999-4c93-b546-f80bec7e2ff7
+[Python_UDP Video Link](https://github.com/user-attachments/assets/ce939bf7-7cab-45de-8ab9-35c15ed11f1c)
 
 
 
