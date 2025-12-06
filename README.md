@@ -17,11 +17,9 @@ No need for multiple add-on cards and connectors to put together a useable syste
 
 Unfortunately, since we had no documentation for this board, we only discovered that the MIPI CSI-2 interface was not implemented once we had it in our hands. For this reason, our recommendation is to use the more powerful Puzhytech PA75T-StarLite board, which includes a built-in MIPI CSI-2 interface. Although the Puzhy PA35T board lacked CSI-2 support, we were still able to establish a connection and enable CMOS communication with the FPGA through the 40-pin connector by using an old IDE hard-drive ribbon cable as an adapter.
 
-<p align="center" style="margin: 20px;">
-    <div style="display: flex; justify-content: center; margin: 20px;">
-        <img width="300" src="0.doc/Images/hard-drive-IDE.jpg" hspace="20">
-        <img width="300" src="0.doc/Images/soldering-skill.jpg" hspace="20">
-    </div>
+<p align="center">
+   <img width="65%" src="0.doc/Images/hard-drive-IDE.jpg" hspace="20">
+   <img width="65%" src="0.doc/Images/soldering-skill.jpg" hspace="20">
 </p>
 
 <p align="center" style="margin: 20px;">
@@ -35,8 +33,8 @@ Unfortunately, since we had no documentation for this board, we only discovered 
 
 The block diagram illustrates the complete camera-to-HDMI and camera-to-UDP-stream data flow implemented on the FPGA module (eth_top) and how the video stream is finally displayed on a PC.
 
-<p align="center" style="margin: 20px;">
-  <img width="600" src="0.doc/Images/Block Diagram.png" >
+<p align="center">
+  <img width="80%" src="0.doc/Images/Block Diagram.png" >
 <p>
 
 The system has two parallel video outputs:
