@@ -10,21 +10,24 @@ Initially, it was planned to use the same hardware for the Ethernet subproject a
 - VHDPlus HDMI + 2-lane CSI Camera adapter
 - Raspberry Pi V2.1 camera (Sony IMX219)
 
-However, due to the inability to achieve a transfer rate of 1Gbps, we had to adapt and change the FPGA baord, for this purpose we used the 
+However, due to the inability to achieve a transfer rate of 1Gbps, we had to adapt and change the FPGA board, for this purpose we used the 
 [Puzhytech PA35T-StarLite](https://www.aliexpress.us/item/3256806434967523.html?gps-id=pcStoreJustForYou&scm=1007.23125.137358.0&scm_id=1007.23125.137358.0&scm-url=1007.23125.137358.0&pvid=c1d02f3c-8f66-4b76-a24a-a72144960d79&_t=gps-id%3ApcStoreJustForYou%2Cscm-url%3A1007.23125.137358.0%2Cpvid%3Ac1d02f3c-8f66-4b76-a24a-a72144960d79%2Ctpp_buckets%3A668%232846%238107%231934&pdp_npi=4%40dis%21USD%21128.44%21102.75%21%21%21901.32%21721.06%21%402101c67a17281960440137763ec377%2112000037845115402%21rec%21US%212013047485%21XZ&spm=a2g0o.store_pc_home.smartJustForYou_2010082555490.1005006621282275&gatewayAdapt=glo2usa) development board, which fit into our budget. 
 This compact card brings everything we need for video projects off-the-bat, within basic package, including 2-lane MIPI CSI connector, HDMI output and 1Gbps Ethernet. 
 No need for multiple add-on cards and connectors to put together a useable system that's 3x more expensive, more fragile, and not in stock.
 
 Unfortunately, since we had no documentation for this board, we only discovered that the MIPI CSI-2 interface was not implemented once we had it in our hands. For this reason, our recommendation is to use the more powerful Puzhytech PA75T-StarLite board, which includes a built-in MIPI CSI-2 interface. Although the Puzhy PA35T board lacked CSI-2 support, we were still able to establish a connection and enable CMOS communication with the FPGA through the 40-pin connector by using an old IDE hard-drive ribbon cable as an adapter.
 
-<div style="display: flex; justify-content: center; margin: 20px;">
-  <img width="300" src="0.doc/Images/hard-drive-IDE.jpg" hspace="20">
-  <img width="300" src="0.doc/Images/soldering-skill.jpg" hspace="20">
-</div>
+<p align="center" style="margin: 20px;">
+    <div style="display: flex; justify-content: center; margin: 20px;">
+        <img width="300" src="0.doc/Images/hard-drive-IDE.jpg" hspace="20">
+        <img width="300" src="0.doc/Images/soldering-skill.jpg" hspace="20">
+    </div>
+</p>
 
 <p align="center" style="margin: 20px;">
   <video src="0.doc/Video/Puzhi-2lane-improvized.mp4" controls width="600"></video>
 </p>
+
 
 [Video Link](https://github.com/user-attachments/assets/f2797042-4659-47c1-8f70-43437a3e3c2f)
 
