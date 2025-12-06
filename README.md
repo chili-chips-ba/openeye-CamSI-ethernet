@@ -26,10 +26,10 @@ Unfortunately, since we had no documentation for this board, we only discovered 
 
 <p align="center" style="margin: 20px;">
   <video src="0.doc/Video/Puzhi-2lane-improvized.mp4" controls width="600"></video>
+
+  [Video Link](https://github.com/user-attachments/assets/f2797042-4659-47c1-8f70-43437a3e3c2f)
 </p>
 
-
-[Video Link](https://github.com/user-attachments/assets/f2797042-4659-47c1-8f70-43437a3e3c2f)
 
 ## Block Diagram Explanation
 
@@ -98,15 +98,16 @@ Local HDMI display directly from FPGA and UDP video stream sent over Ethernet to
     On the PC side, the UDP packets are decoded and displayed in software.
     Two example implementations are shown:
 
-    a) Python receiver
+    a) Python receiver [Source](5.sw/python)
 
     udp_receiver.py uses NumPy + OpenCV (cv2)
     Reconstructs the frames from UDP packets and displays them on Display 2
 
-    b) QtUDP - C++ receiver
+    b) QtUDP - C++ receiver [Source](5.sw/qt)
 
     Written using Qt + OpenCV
-    Performs the same function: receives UDP video packets, reconstructs the image, and displays it. 
+    Performs the same function: receives UDP video packets, reconstructs the image, and displays it.
+
     Both implementations can optionally output to an HDMI display connected to the PC.
 
 ## Explanation of RGB-to-UDP Conversion Logic
