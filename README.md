@@ -2,6 +2,10 @@
 1Gbps Ethernet uplink of live camera video over UDP. This is a component of openeye-CamSI project that may be used independently. It comes with GUI app for rendering UDP video on PC.
 For details about main project openeye-CamSI, please refer to the parent [openeye-CamSI](https://github.com/chili-chips-ba/openeye-CamSI) project.
 
+<p align="center">
+   <img width="30%" src="0.doc/Images/openeye.phex.png">
+</p>
+
 ## Introduction to openeye-CamSI-ethernet subproject
 
 Initially, it was planned to use the same hardware for the Ethernet subproject as for the main project, i.e. the following configuration:
